@@ -37,8 +37,6 @@ public class PetDbHelper extends SQLiteOpenHelper
         db.execSQL(SQL_CREATE_ENTRIES);
     }
 
-
-
     public static final String DELETE_ALL_ENTRIES = "DROP TABLE IF EXISTS " + PetEntry.TABLE_NAME;
 
 }

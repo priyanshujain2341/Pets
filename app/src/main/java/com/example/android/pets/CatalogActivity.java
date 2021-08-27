@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -56,7 +57,7 @@ public class CatalogActivity extends AppCompatActivity {
 //        PetDbHelper mDbHelper = new PetDbHelper(this);
 
         // Create and/or open a database to read from it
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+//        SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
 
         String[] projections = {
@@ -65,17 +66,25 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.COLUMN_PET_BREED,
                 PetEntry.COLUMN_PET_GENDER,
                 PetEntry.COLUMN_PET_WEIGHT };
+
 //        String selection = " WHERE ";
         // Perform this raw SQL query "SELECT * FROM pets"
         // to get a Cursor that contains all rows from the pets table.
-        Cursor cursor = db.query(
-                PetEntry.TABLE_NAME, projections,
+//        Cursor cursor = db.query(
+//                PetEntry.TABLE_NAME, projections,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null );
+
+        Cursor cursor = getContentResolver().query(
+                PetEntry.CONTENT_URI,
+                projections,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null );
+                null);
 
         TextView textViewPet = (TextView) findViewById(R.id.text_view_pet);
 
@@ -148,15 +157,15 @@ public class CatalogActivity extends AppCompatActivity {
     private void insertPet()
     {
 //        PetDbHelper mDbHelper = new PetDbHelper(this);
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+//        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-//        values.put(PetEntry._ID, 1);
+
         values.put(PetEntry.COLUMN_PET_NAME, "Toto");
         values.put(PetEntry.COLUMN_PET_BREED, "Terrier");
         values.put(PetEntry.COLUMN_PET_GENDER, PetEntry.GENDER_MALE);
         values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
 
-        long id = db.insert(PetEntry.TABLE_NAME, null, values);
+        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
     }
 }
