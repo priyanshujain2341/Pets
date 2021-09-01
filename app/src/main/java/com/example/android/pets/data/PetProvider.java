@@ -82,7 +82,7 @@ public class PetProvider extends ContentProvider
                 // For every "?" in the selection, we need to have an element in the selection
                 // arguments that will fill in the "?". Since we have 1 question mark in the
                 // selection, we have 1 String in the selection arguments' String array.
-                selection = PetEntry._ID + "+=?";
+                selection = PetEntry._ID + "=?";
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
 
                 cursor= db.query(PetEntry.TABLE_NAME,
@@ -99,6 +99,8 @@ public class PetProvider extends ContentProvider
                 Log.e(LOG_TAG, "Uri is: "+uri+"\n match is: "+match );
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
+
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
     }
 
@@ -152,6 +154,9 @@ public class PetProvider extends ContentProvider
             Log.e(LOG_TAG, "Failed to insert for uri: "+uri);
             return null;
         }
+
+        getContext().getContentResolver().notifyChange(uri, null);
+
         return ContentUris.withAppendedId(uri, id);
     }
 
@@ -216,7 +221,14 @@ public class PetProvider extends ContentProvider
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        return db.update(PetEntry.TABLE_NAME, values, selection, selectionArgs);
+        int rowsUpdated = db.update(PetEntry.TABLE_NAME, values, selection, selectionArgs);
+
+        if(rowsUpdated!=0)
+        {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return rowsUpdated;
 
     }
 
@@ -226,23 +238,32 @@ public class PetProvider extends ContentProvider
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs)
     {
+        int rowsDeleted;
         int match = sUriMatcher.match(uri);
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         switch (match)
         {
             case PetContract.PETS:
             {
-                return db.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = db.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             }
             case PetContract.PET_ID:
             {
                 selection = PetEntry._ID + "=?";
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
-                return db.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted =  db.delete(PetEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             }
             default:
                 throw new IllegalArgumentException("Deletion is not supported for "+uri);
         }
+
+        if(rowsDeleted!=0)
+        {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rowsDeleted;
     }
 
     /**
